@@ -2,3 +2,6 @@ ruff
 pytest
 python-dotenv
 pydantic
+bandit
+groq
+streamlit
