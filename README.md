@@ -12,6 +12,17 @@ An autonomous, AI-driven code review and refactoring agent built with Python, St
 - **🎨 Premium Web Interface**: Built with Streamlit, featuring custom dynamic Dark/Light mode toggles, brand watermarking (AJ), and an intuitive SaaS user experience.
 
 ---
+---
+
+## 📸 Dashboard & UI Preview
+
+### 🌙 Dark Mode Interface
+> *Featuring the clean dark gradient layout, and SaaS metrics overview.*
+![Dark Mode](assets/dark_mode.png)
+
+### ☀️ Light Mode Interface
+> *Seamlessly toggle to light mode directly from the main UI with a single click.*
+![Light Mode](assets/light_mode.png)
 
 ## 🛠️ Tech Stack
 
