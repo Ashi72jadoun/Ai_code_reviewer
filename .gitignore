@@ -1,10 +1,7 @@
-# Virtual Environment
-venv/
-
-# Environment Variables / Secrets
 .env
-
-# Python Caches
+.env.*
+!.env.example
+.venv/
+venv/
 __pycache__/
-.pytest_cache/
-*.pyc
+*.py[cod]
