@@ -117,7 +117,6 @@ flowchart TD
 | Qwen | Model configured for AI review |
 | Git | Diff extraction and uploaded-file preparation |
 
-Bandit and Ruff are used as review checks; they are intentionally not included in the technology badges at the top.
 
 ## Project Structure
 
