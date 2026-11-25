@@ -28,6 +28,13 @@ if "repo_path_edited" not in st.session_state:
 if "review_source" not in st.session_state:
     st.session_state.review_source = "Local repository"
 
+# Keep the review and any error across Streamlit reruns, including theme changes.
+if "review_result" not in st.session_state:
+    st.session_state.review_result = None
+
+if "review_error" not in st.session_state:
+    st.session_state.review_error = None
+
 
 SUPPORTED_UPLOAD_TYPES = [
     "py", "js", "jsx", "ts", "tsx", "java", "go", "rs",
@@ -111,6 +118,7 @@ def create_uploaded_repository(uploaded_files, repo_dir):
 
 
 def display_review(review_output):
+    """Display the review while keeping its existing content unchanged."""
     output = str(review_output or "").strip()
 
     if not output or "no uncommitted changes found" in output.lower():
@@ -120,7 +128,6 @@ def display_review(review_output):
         )
         return
 
-    st.balloons()
     st.success("✅ AURA REview completed!")
 
     st.markdown(
@@ -138,9 +145,7 @@ def display_review(review_output):
         unsafe_allow_html=True,
     )
 
-    # Keep the review content and explanations unchanged.
-    # The container lets the review text be styled independently
-    # from its code blocks.
+    # The review container is styled independently from code blocks.
     with st.container(key="review_content"):
         st.markdown(output)
 
@@ -595,10 +600,7 @@ css = """
         font-size: 0.9em;
     }
 
-    /*
-       Existing code-block styling is intentionally unchanged.
-       Review text styles below do not target pre/code blocks.
-    */
+    /* Existing code-block styling, intentionally unchanged */
     .main [data-testid="stMarkdownContainer"] pre {
         overflow-x: auto;
         margin: 0.8rem 0 1.2rem;
@@ -642,7 +644,7 @@ css = """
         font-weight: 850;
     }
 
-    /* Review panel and text styles; code blocks are left unchanged. */
+    /* Review panel and text styles; code blocks are left unchanged */
     [class*="st-key-review_content"] {
         margin-top: 0.9rem;
         padding: clamp(1rem, 2vw, 1.7rem);
@@ -725,7 +727,7 @@ css = """
         font-size: 1.15rem !important;
     }
 
-    /* Warm peach highlights for inline code such as filenames and locations. */
+    /* Warm peach highlights for inline code such as filenames and locations */
     [class*="st-key-review_content"]
     [data-testid="stMarkdownContainer"]
     :not(pre) > code {
@@ -938,7 +940,7 @@ with col3:
     )
 
 
-# Analyze panel and button
+# Analyze panel
 st.markdown(
     """
     <div class="action-panel">
@@ -963,6 +965,8 @@ if review_source == "Uploaded files":
             "Upload one or more source files in the sidebar to begin."
         )
 
+
+# Start a new review
 analyze_clicked = st.button(
     "🚀 Analyze Code with AURA REview",
     key="analyze_code",
@@ -970,17 +974,21 @@ analyze_clicked = st.button(
     use_container_width=True,
 )
 
-
-# Run the review
 if analyze_clicked:
+    # Clear old output only when a new analysis is requested.
+    st.session_state.review_result = None
+    st.session_state.review_error = None
+
     try:
         if review_source == "Local repository":
             target_path = repo_path.strip()
 
             if not target_path:
-                st.error("Enter a repository path in the sidebar.")
+                st.session_state.review_error = (
+                    "Enter a repository path in the sidebar."
+                )
             elif not os.path.isdir(target_path):
-                st.error(
+                st.session_state.review_error = (
                     f"❌ Repository folder not found: `{target_path}`"
                 )
             else:
@@ -989,11 +997,12 @@ if analyze_clicked:
                 ):
                     review_output = generate_code_review(target_path)
 
-                display_review(review_output)
+                # Store the result so it survives theme-toggle reruns.
+                st.session_state.review_result = str(review_output or "")
 
         else:
             if not uploaded_files:
-                st.error(
+                st.session_state.review_error = (
                     "Upload at least one source file in the sidebar."
                 )
             else:
@@ -1010,10 +1019,19 @@ if analyze_clicked:
                         )
                         review_output = generate_code_review(temp_dir)
 
-                display_review(review_output)
+                # Store the result so it survives theme-toggle reruns.
+                st.session_state.review_result = str(review_output or "")
 
     except Exception as error:
-        st.error(f"❌ Review failed: {error}")
+        st.session_state.review_error = f"❌ Review failed: {error}"
+
+
+# Render the stored result and error on every run.
+if st.session_state.review_error:
+    st.error(st.session_state.review_error)
+
+if st.session_state.review_result is not None:
+    display_review(st.session_state.review_result)
 
 
 # Centered footer
@@ -1021,7 +1039,7 @@ st.markdown(
     """
     <div class="aura-footer">
         <span class="footer-brand">AURA REview</span>:
-        Engineered with Python, Streamlit,Groq & by AJ:)
+        Engineered with Python, Streamlit, and Groq Cloud &amp; AJ :)
     </div>
     """,
     unsafe_allow_html=True,
